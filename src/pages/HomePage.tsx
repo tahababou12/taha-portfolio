@@ -27,7 +27,7 @@ const HomePage: React.FC = () => {
         
         // For each project, fetch gallery images
         const projectsWithGallery = await Promise.all(
-          projectsData.map(async (project) => {
+          projectsData.map(async (project: any) => {
             // Fetch gallery images
             const { data: galleryData } = await supabase
               .from('project_gallery')
@@ -37,7 +37,7 @@ const HomePage: React.FC = () => {
             
             return {
               ...project,
-              gallery: galleryData?.map(g => g.image_url) || [],
+              gallery: galleryData?.map((g: any) => g.image_url) || [],
             };
           })
         );
@@ -75,12 +75,12 @@ const HomePage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-8 sm:mb-16">
         <div className="md:w-1/2 mb-8 md:mb-0">
           <h1 className="text-2xl sm:text-3xl font-normal">
-            Taha Ababou <span className="text-gray-500">is a Machine Learning Engineer with</span> <a href="#" className="text-white">4 YoE</a>.
+            Taha Ababou <span className="text-gray-500">is a Machine Learning Engineer with</span> <span className="text-white cursor-pointer">4 YoE</span>.
           </h1>
           
           <div className="mt-8 max-w-2xl">
             <p className="text-xl sm:text-2xl font-normal text-gray-500">
-              He builds AI-powered applications and data systems. Machine learning and software engineering is his jam. Past: <a href="#" className="text-white">Fidelity Investments</a>, <a href="#" className="text-white">Local</a>, <a href="#" className="text-white">The Society of Scent</a>.
+              He builds AI-powered applications and data systems. Machine learning and software engineering is his jam. Past: <span className="text-white cursor-pointer">Fidelity Investments</span>, <span className="text-white cursor-pointer">Local</span>, <span className="text-white cursor-pointer">The Society of Scent</span>, <span className="text-white cursor-pointer">Bank of Africa</span>.
             </p>
           </div>
           
@@ -129,24 +129,31 @@ const HomePage: React.FC = () => {
               <img 
                 src={project.gallery && project.gallery.length > 0 ? project.gallery[0] : project.image} 
                 alt={project.title} 
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-black bg-opacity-70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                <h3 className="text-white text-lg sm:text-xl font-medium">{project.title}</h3>
-                <p className="text-gray-300 text-xs sm:text-sm mb-4">{project.description}</p>
-                <div className="flex justify-between items-center">
-                  <span className="text-white underline text-xs sm:text-sm">
-                    View Details
-                  </span>
-                  <a 
-                    href={project.link} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="text-white underline text-xs sm:text-sm"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    View Project
-                  </a>
+              
+              {/* Overlay that appears only on hover */}
+              <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-6">
+                {/* Top section with title */}
+                <div>
+                  <h3 className="text-white text-2xl sm:text-3xl font-medium drop-shadow-md">
+                    {project.title}
+                  </h3>
+                </div>
+
+                {/* Bottom section with description and category */}
+                <div className="space-y-2">
+                  <p className="text-white text-base sm:text-lg drop-shadow-md">
+                    {project.description}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm bg-gray-800/80 text-gray-200 px-2 py-1 rounded">
+                      {project.category}
+                    </span>
+                    <span className="text-white text-sm underline">
+                      View Details
+                    </span>
+                  </div>
                 </div>
               </div>
             </Link>

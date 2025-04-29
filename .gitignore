@@ -3,3 +3,6 @@ node_modules/
 dist/
 docs/
 .cursor/
+
+db/local.db
+db/exports/

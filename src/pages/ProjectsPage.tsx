@@ -24,7 +24,7 @@ const ProjectsPage: React.FC = () => {
         
         // For each project, fetch related data
         const projectsWithRelations = await Promise.all(
-          projectsData.map(async (project) => {
+          projectsData.map(async (project: any) => {
             // Fetch technologies
             const { data: technologiesData } = await supabase
               .from('project_technologies')
@@ -52,10 +52,10 @@ const ProjectsPage: React.FC = () => {
             
             return {
               ...project,
-              technologies: technologiesData?.map(t => t.technology) || [],
-              features: featuresData?.map(f => f.feature) || [],
-              team: teamData?.map(t => t.member_name) || [],
-              gallery: galleryData?.map(g => g.image_url) || [],
+              technologies: technologiesData?.map((t: any) => t.technology) || [],
+              features: featuresData?.map((f: any) => f.feature) || [],
+              team: teamData?.map((t: any) => t.member_name) || [],
+              gallery: galleryData?.map((g: any) => g.image_url) || [],
             };
           })
         );
@@ -89,27 +89,6 @@ const ProjectsPage: React.FC = () => {
     ? projects 
     : projects.filter(project => project.category === activeFilter);
 
-  // Awards and programs (static data for now)
-  const awards = [
-    {
-      title: "HackPrinceton Spring 2025",
-      description: "Best Game Award"
-    },
-    {
-      title: "Harvard University MakeHarvard Hardware Hackathon",
-      description: "Most Interactive Design Award"
-    },
-    {
-      title: "BU ECE Shark Tank Winner",
-      link: "https://github.com/PharmaML"
-    }
-  ];
-
-  const programs = [
-    "BU Innovation Pathway",
-    "BU First Year Innovation Fellowship"
-  ];
-
   // Get page title based on active filter
   const getPageTitle = () => {
     if (activeFilter === 'all') return 'All Projects';
@@ -126,29 +105,31 @@ const ProjectsPage: React.FC = () => {
       <img 
         src={project.gallery && project.gallery.length > 0 ? project.gallery[0] : project.image} 
         alt={project.title} 
-        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
       />
-      <div className="absolute inset-0 bg-black bg-opacity-70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="text-white text-lg sm:text-xl font-medium">{project.title}</h3>
-          <span className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded">
-            {project.category}
-          </span>
+      
+      {/* Overlay that appears only on hover */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-6">
+        {/* Top section with title */}
+        <div>
+          <h3 className="text-white text-2xl sm:text-3xl font-medium drop-shadow-md">
+            {project.title}
+          </h3>
         </div>
-        <p className="text-gray-300 text-xs sm:text-sm mb-4">{project.description}</p>
-        <div className="flex justify-between items-center">
-          <span className="text-white underline text-xs sm:text-sm">
-            View Details
-          </span>
-          <a 
-            href={project.link} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="text-white underline text-xs sm:text-sm"
-            onClick={(e) => e.stopPropagation()}
-          >
-            View Project
-          </a>
+
+        {/* Bottom section with description and category */}
+        <div className="space-y-2">
+          <p className="text-white text-base sm:text-lg drop-shadow-md">
+            {project.description}
+          </p>
+          <div className="flex items-center justify-between">
+            <span className="text-sm bg-gray-800/80 text-gray-200 px-2 py-1 rounded">
+              {project.category}
+            </span>
+            <span className="text-white text-sm underline">
+              View Details
+            </span>
+          </div>
         </div>
       </div>
     </Link>
@@ -219,37 +200,6 @@ const ProjectsPage: React.FC = () => {
               </section>
             )
           ))}
-
-          <section className="mb-16">
-            <h2 className="text-2xl font-normal mb-6 border-b border-gray-800 pb-2">Awards & Competitions</h2>
-            <ul className="space-y-3">
-              {awards.map((award, index) => (
-                <li key={index} className="bg-gray-900 p-4 rounded-lg">
-                  <h3 className="font-medium">{award.title}</h3>
-                  <p className="text-gray-400">{award.description}</p>
-                  {award.link && (
-                    <a 
-                      href={award.link} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-white underline text-sm mt-1 inline-block"
-                    >
-                      View Project
-                    </a>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <section className="mb-16">
-            <h2 className="text-2xl font-normal mb-6 border-b border-gray-800 pb-2">Entrepreneurship Programs</h2>
-            <ul className="list-disc list-inside text-gray-300 space-y-2">
-              {programs.map((program, index) => (
-                <li key={index}>{program}</li>
-              ))}
-            </ul>
-          </section>
         </>
       ) : (
         // Show filtered projects when a specific category is selected

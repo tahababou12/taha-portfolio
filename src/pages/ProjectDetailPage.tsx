@@ -55,6 +55,13 @@ const ProjectDetailPage: React.FC = () => {
           .eq('project_id', id)
           .order('display_order', { ascending: true });
         
+        // Fetch project sections
+        const { data: sectionsData } = await supabase
+          .from('project_sections')
+          .select('*')
+          .eq('project_id', id)
+          .order('display_order', { ascending: true });
+        
         // Combine all data
         const fullProject = {
           ...projectData,
@@ -62,6 +69,7 @@ const ProjectDetailPage: React.FC = () => {
           features: featuresData?.map(f => f.feature) || [],
           team: teamData?.map(t => t.member_name) || [],
           gallery: galleryData?.map(g => g.image_url) || [],
+          sections: sectionsData || [],
         };
         
         setProject(fullProject);
@@ -183,6 +191,18 @@ const ProjectDetailPage: React.FC = () => {
           <p className="text-gray-300 mb-6 leading-relaxed">
             {project.long_description}
           </p>
+
+          {/* Project Sections */}
+          {project.sections && project.sections.length > 0 && (
+            <div className="space-y-8 mb-8">
+              {project.sections.map((section) => (
+                <div key={section.id} className="project-section">
+                  <h3 className="text-xl font-normal mb-4">{section.section_title}</h3>
+                  <p className="text-gray-300 leading-relaxed">{section.section_content}</p>
+                </div>
+              ))}
+            </div>
+          )}
 
           {project.features && project.features.length > 0 && (
             <div className="mb-8">

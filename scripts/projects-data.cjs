@@ -1,18 +1,4 @@
-// Script to populate Supabase with project data
-const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config();
-
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Missing Supabase environment variables');
-  process.exit(1);
-}
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-// Sample project data
+// Project data for the portfolio
 const projects = [
   {
     title: "BragAI",
@@ -235,6 +221,18 @@ const projects = [
       "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1611606063065-ee7946f0787a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
       "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+    ],
+    sections: [
+      {
+        section_title: "Research Methodology",
+        section_content: "This study employed a mixed-methods approach combining qualitative analysis of tweet content with quantitative modeling of engagement metrics. The dataset included over 100,000 customer support interactions from major brands across various industries.",
+        display_order: 1
+      },
+      {
+        section_title: "Key Findings",
+        section_content: "The research identified specific language patterns and response strategies that significantly increased customer satisfaction and engagement. Response time was found to be less important than personalization and solution clarity in determining positive outcomes.",
+        display_order: 2
+      }
     ]
   },
   // New Personal Projects
@@ -532,131 +530,4 @@ const projects = [
   }
 ];
 
-// Function to insert a project and its related data
-async function insertProject(project) {
-  try {
-    // Insert the main project
-    const { data: projectData, error: projectError } = await supabase
-      .from('projects')
-      .insert({
-        title: project.title,
-        description: project.description,
-        category: project.category,
-        image: project.image,
-        link: project.link,
-        github: project.github,
-        live_demo: project.live_demo,
-        long_description: project.long_description,
-        year: project.year,
-        role: project.role
-      })
-      .select()
-      .single();
-    
-    if (projectError) throw projectError;
-    
-    const projectId = projectData.id;
-    console.log(`Inserted project: ${project.title} with ID: ${projectId}`);
-    
-    // Insert technologies
-    if (project.technologies && project.technologies.length > 0) {
-      const techData = project.technologies.map(tech => ({
-        project_id: projectId,
-        technology: tech
-      }));
-      
-      const { error: techError } = await supabase
-        .from('project_technologies')
-        .insert(techData);
-      
-      if (techError) throw techError;
-      console.log(`Inserted ${techData.length} technologies for project: ${project.title}`);
-    }
-    
-    // Insert features
-    if (project.features && project.features.length > 0) {
-      const featureData = project.features.map(feature => ({
-        project_id: projectId,
-        feature: feature
-      }));
-      
-      const { error: featureError } = await supabase
-        .from('project_features')
-        .insert(featureData);
-      
-      if (featureError) throw featureError;
-      console.log(`Inserted ${featureData.length} features for project: ${project.title}`);
-    }
-    
-    // Insert team members
-    if (project.team && project.team.length > 0) {
-      const teamData = project.team.map(member => ({
-        project_id: projectId,
-        member_name: member
-      }));
-      
-      const { error: teamError } = await supabase
-        .from('project_team_members')
-        .insert(teamData);
-      
-      if (teamError) throw teamError;
-      console.log(`Inserted ${teamData.length} team members for project: ${project.title}`);
-    }
-    
-    // Insert gallery images
-    if (project.gallery && project.gallery.length > 0) {
-      const galleryData = project.gallery.map((image, index) => ({
-        project_id: projectId,
-        image_url: image,
-        display_order: index
-      }));
-      
-      const { error: galleryError } = await supabase
-        .from('project_gallery')
-        .insert(galleryData);
-      
-      if (galleryError) throw galleryError;
-      console.log(`Inserted ${galleryData.length} gallery images for project: ${project.title}`);
-    }
-    
-    // Insert project sections
-    if (project.sections && project.sections.length > 0) {
-      const sectionsData = project.sections.map(section => ({
-        project_id: projectId,
-        section_title: section.section_title,
-        section_content: section.section_content,
-        display_order: section.display_order
-      }));
-      
-      const { error: sectionsError } = await supabase
-        .from('project_sections')
-        .insert(sectionsData);
-      
-      if (sectionsError) throw sectionsError;
-      console.log(`Inserted ${sectionsData.length} sections for project: ${project.title}`);
-    }
-    
-    return projectId;
-  } catch (error) {
-    console.error(`Error inserting project ${project.title}:`, error);
-    throw error;
-  }
-}
-
-// Main function to populate all projects
-async function populateProjects() {
-  try {
-    console.log('Starting to populate projects...');
-    
-    for (const project of projects) {
-      await insertProject(project);
-    }
-    
-    console.log('Successfully populated all projects!');
-  } catch (error) {
-    console.error('Error populating projects:', error);
-  }
-}
-
-// Run the population script
-populateProjects();
+module.exports = { projects }; 

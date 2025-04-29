@@ -1,3 +1,12 @@
+export interface ProjectSection {
+  id: string;
+  project_id: string;
+  section_title: string;
+  section_content: string;
+  display_order: number;
+  created_at?: string;
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -15,4 +24,5 @@ export interface Project {
   features?: string[];
   team?: string[];
   gallery?: string[];
+  sections?: ProjectSection[];
 }
