@@ -89,12 +89,6 @@ const ProjectsPage: React.FC = () => {
     ? projects 
     : projects.filter(project => project.category === activeFilter);
 
-  // Get page title based on active filter
-  const getPageTitle = () => {
-    if (activeFilter === 'all') return 'All Projects';
-    return `${activeFilter} Projects`;
-  };
-
   // Awards and programs (static data for now)
   const awards = [
     {
@@ -116,9 +110,19 @@ const ProjectsPage: React.FC = () => {
     "BU First Year Innovation Fellowship"
   ];
 
+  // Get page title based on active filter
+  const getPageTitle = () => {
+    if (activeFilter === 'all') return 'All Projects';
+    return `${activeFilter} Projects`;
+  };
+
   // Render project card with link to detail page
   const renderProjectCard = (project: Project) => (
-    <div key={project.id} className="aspect-square overflow-hidden relative group">
+    <Link 
+      key={project.id} 
+      to={`/project/${project.id}`}
+      className="aspect-square overflow-hidden relative group block cursor-pointer"
+    >
       <img 
         src={project.gallery && project.gallery.length > 0 ? project.gallery[0] : project.image} 
         alt={project.title} 
@@ -133,15 +137,21 @@ const ProjectsPage: React.FC = () => {
         </div>
         <p className="text-gray-300 text-xs sm:text-sm mb-4">{project.description}</p>
         <div className="flex justify-between items-center">
-          <Link to={`/project/${project.id}`} className="text-white underline text-xs sm:text-sm">
+          <span className="text-white underline text-xs sm:text-sm">
             View Details
-          </Link>
-          <a href={project.link} target="_blank" rel="noopener noreferrer" className="text-white underline text-xs sm:text-sm">
+          </span>
+          <a 
+            href={project.link} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="text-white underline text-xs sm:text-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
             View Project
           </a>
         </div>
       </div>
-    </div>
+    </Link>
   );
 
   if (loading) {

@@ -121,7 +121,11 @@ const HomePage: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
           {featuredProjects.map((project) => (
-            <div key={project.id} className="aspect-square overflow-hidden relative group">
+            <Link 
+              key={project.id} 
+              to={`/project/${project.id}`}
+              className="aspect-square overflow-hidden relative group block cursor-pointer"
+            >
               <img 
                 src={project.gallery && project.gallery.length > 0 ? project.gallery[0] : project.image} 
                 alt={project.title} 
@@ -131,15 +135,21 @@ const HomePage: React.FC = () => {
                 <h3 className="text-white text-lg sm:text-xl font-medium">{project.title}</h3>
                 <p className="text-gray-300 text-xs sm:text-sm mb-4">{project.description}</p>
                 <div className="flex justify-between items-center">
-                  <Link to={`/project/${project.id}`} className="text-white underline text-xs sm:text-sm">
+                  <span className="text-white underline text-xs sm:text-sm">
                     View Details
-                  </Link>
-                  <a href={project.link} target="_blank" rel="noopener noreferrer" className="text-white underline text-xs sm:text-sm">
+                  </span>
+                  <a 
+                    href={project.link} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-white underline text-xs sm:text-sm"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     View Project
                   </a>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}
