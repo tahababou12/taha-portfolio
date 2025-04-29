@@ -25,7 +25,7 @@ const Navbar: React.FC = () => {
         {/* Desktop navigation */}
         <div className="hidden md:flex md:space-x-8">
           <Link to="/" className="text-white hover:text-gray-300 transition-colors">Work</Link>
-          <a href="#" className="text-white hover:text-gray-300 transition-colors">Fun</a>
+          <a href="#" className="text-white hover:text-gray-300 transition-colors">Awards</a>
           <Link to="/info" className="text-white hover:text-gray-300 transition-colors">Info</Link>
           <a href="#" className="text-white hover:text-gray-300 transition-colors">Resume</a>
         </div>

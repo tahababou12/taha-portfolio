@@ -7,13 +7,17 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "populate-db": "node scripts/populate-supabase-cjs.cjs"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.39.7",
+    "dotenv": "^16.4.5",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^7.5.3"
+    "react-router-dom": "^6.22.3",
+    "three": "^0.176.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
