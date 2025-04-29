@@ -113,20 +113,25 @@ const ProjectsPage: React.FC = () => {
   }, []);
 
   // Group projects by category
-  const projectsByCategory = {
-    featured: projects.filter(p => p.category === 'Featured'),
-    personal: projects.filter(p => p.category === 'Personal'),
-    games: projects.filter(p => p.category === 'Game'),
-    papers: projects.filter(p => p.category === 'Research')
-  };
-
-  // Get unique categories
-  const categories = ['all', ...new Set(projects.map(project => project.category))];
+  const projectsByCategory: Record<string, Project[]> = {};
+  
+  // Get unique categories to populate both the filter buttons and the projectsByCategory object
+  const uniqueCategories = [...new Set(projects.map(project => project.category))];
+  
+  // Populate projectsByCategory with all projects grouped by their category
+  uniqueCategories.forEach(category => {
+    if (category) {
+      projectsByCategory[category.toLowerCase()] = projects.filter(p => p.category === category);
+    }
+  });
+  
+  // Get categories for filter buttons, ensuring 'all' is first
+  const categories = ['all', ...uniqueCategories];
 
   // Filter projects based on active filter
   const filteredProjects = activeFilter === 'all' 
     ? projects 
-    : projects.filter(project => project.category === activeFilter);
+    : projects.filter(project => project.category && project.category.toLowerCase() === activeFilter.toLowerCase());
 
   // Get page title based on active filter
   const getPageTitle = () => {
@@ -222,7 +227,7 @@ const ProjectsPage: React.FC = () => {
                   : 'text-gray-400 hover:text-white hover:bg-gray-900'
               }`}
             >
-              {category.charAt(0).toUpperCase() + category.slice(1)}
+              {category === 'all' ? 'All' : category}
             </button>
           ))}
         </div>
@@ -235,7 +240,7 @@ const ProjectsPage: React.FC = () => {
             categoryProjects.length > 0 && (
               <section key={category} className="mb-16">
                 <h2 className="text-2xl font-normal mb-6 border-b border-gray-800 pb-2">
-                  {category.charAt(0).toUpperCase() + category.slice(1)} Projects
+                  {categoryProjects[0]?.category || category} Projects
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                   {categoryProjects.map(renderProjectCard)}
