@@ -20,6 +20,8 @@ export interface Project {
   year?: string;
   role?: string;
   created_at?: string;
+  featured?: boolean;
+  featured_order?: number;
   technologies?: string[];
   features?: string[];
   team?: string[];

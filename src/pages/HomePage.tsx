@@ -3,6 +3,11 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { Project } from '../types/project'
 import HeroGraphic from '../components/HeroGraphic'
+import { getProjectSlug } from '../utils/slug'
+
+interface GalleryImage {
+  image_url: string;
+}
 
 const HomePage: React.FC = () => {
   const [featuredProjects, setFeaturedProjects] = useState<Project[]>([]);
@@ -11,21 +16,20 @@ const HomePage: React.FC = () => {
   const [totalProjects, setTotalProjects] = useState(0);
   const [hoveredProjectId, setHoveredProjectId] = useState<string | null>(null);
   
-  // Handle card click for mobile devices
-  const handleCardClick = (e: React.MouseEvent, projectId: string) => {
-    // If this card is already hovered, let the click proceed to the link
-    if (hoveredProjectId === projectId) {
-      return;
-    }
-    
-    // Otherwise, prevent navigation and set this card as hovered
-    e.preventDefault();
+  // Handle card hover for desktop
+  const handleCardHover = (projectId: string | null) => {
     setHoveredProjectId(projectId);
   };
 
-  // Reset hovered state when user clicks elsewhere
+  // Reset hovered state when clicking outside
   useEffect(() => {
-    const handleOutsideClick = () => setHoveredProjectId(null);
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.project-card')) {
+        setHoveredProjectId(null);
+      }
+    };
+    
     document.addEventListener('click', handleOutsideClick);
     
     return () => {
@@ -38,19 +42,19 @@ const HomePage: React.FC = () => {
       try {
         setLoading(true);
         
-        // Fetch featured projects
+        // Fetch featured projects using the new featured flag and order
         const { data: projectsData, error: projectsError } = await supabase
           .from('projects')
           .select('*')
-          .eq('category', 'Featured')
-          .order('created_at', { ascending: false })
-          .limit(6);
+          .eq('featured', true)
+          .order('featured_order', { ascending: true })
+          .limit(12); // Increased limit to accommodate more featured projects
         
         if (projectsError) throw projectsError;
         
         // For each project, fetch gallery images
         const projectsWithGallery = await Promise.all(
-          projectsData.map(async (project: any) => {
+          projectsData.map(async (project: Project) => {
             // Fetch gallery images
             const { data: galleryData } = await supabase
               .from('project_gallery')
@@ -60,7 +64,7 @@ const HomePage: React.FC = () => {
             
             return {
               ...project,
-              gallery: galleryData?.map((g: any) => g.image_url) || [],
+              gallery: galleryData?.map((g: GalleryImage) => g.image_url) || [],
             };
           })
         );
@@ -98,7 +102,7 @@ const HomePage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-8 sm:mb-16">
         <div className="md:w-1/2 mb-8 md:mb-0">
           <h1 className="text-2xl sm:text-3xl font-normal">
-            Taha Ababou <span className="text-gray-500">is a Machine Learning Engineer with</span> <span className="text-white cursor-pointer">4 YoE</span>.
+            Taha Ababou <span className="text-gray-500">is a Full Stack Software & Machine Learning Engineer with</span> <span className="text-white cursor-pointer">4 YoE</span>.
           </h1>
           
           <div className="mt-8 max-w-2xl">
@@ -146,9 +150,10 @@ const HomePage: React.FC = () => {
           {featuredProjects.map((project) => (
             <Link 
               key={project.id} 
-              to={`/project/${project.id}`}
-              className="aspect-square overflow-hidden relative group block cursor-pointer"
-              onClick={(e) => handleCardClick(e, project.id)}
+              to={`/project/${getProjectSlug(project.title)}`}
+              className="project-card aspect-square overflow-hidden relative group block cursor-pointer"
+              onMouseEnter={() => handleCardHover(project.id)}
+              onMouseLeave={() => handleCardHover(null)}
             >
               <img 
                 src={project.gallery && project.gallery.length > 0 ? project.gallery[0] : project.image} 
@@ -177,7 +182,7 @@ const HomePage: React.FC = () => {
                       {project.category}
                     </span>
                     <span className="text-white text-sm underline">
-                      {hoveredProjectId === project.id ? 'Tap to View' : 'View Details'}
+                      View Details
                     </span>
                   </div>
                 </div>

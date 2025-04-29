@@ -1,5 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { Project } from '../types/project'
 
 // Sample project data
 const sampleProjects = [
@@ -228,6 +229,203 @@ const AdminPage: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {/* Add this new component for managing featured projects */}
+      <FeaturedProjectsManager />
+    </div>
+  );
+};
+
+// Add this new component for managing featured projects
+const FeaturedProjectsManager: React.FC = () => {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch all projects
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .order('featured_order', { ascending: true, nullsLast: true });
+      
+      if (error) throw error;
+      
+      setProjects(data || []);
+    } catch (err: any) {
+      console.error('Error fetching projects:', err);
+      setError(err.message || 'Failed to load projects');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleFeatured = async (projectId: string, featured: boolean) => {
+    try {
+      setResult(null);
+      setError(null);
+      
+      // Update the featured flag
+      const { error } = await supabase
+        .from('projects')
+        .update({ 
+          featured,
+          // If featuring, assign it the highest order number + 1
+          featured_order: featured ? 
+            Math.max(0, ...projects.filter(p => p.featured).map(p => p.featured_order || 0)) + 1 : 
+            null
+        })
+        .eq('id', projectId);
+      
+      if (error) throw error;
+      
+      // Refresh the projects list
+      await fetchProjects();
+      setResult(`Project ${featured ? 'featured' : 'unfeatured'} successfully`);
+    } catch (err: any) {
+      console.error('Error updating project:', err);
+      setError(err.message || 'Failed to update project');
+    }
+  };
+
+  const moveProject = async (projectId: string, direction: 'up' | 'down') => {
+    try {
+      setResult(null);
+      setError(null);
+      
+      // Find the current project
+      const featuredProjects = projects.filter(p => p.featured).sort((a, b) => 
+        (a.featured_order || 0) - (b.featured_order || 0)
+      );
+      
+      const currentIndex = featuredProjects.findIndex(p => p.id === projectId);
+      if (currentIndex === -1) return;
+      
+      let swapIndex: number;
+      if (direction === 'up') {
+        if (currentIndex === 0) return; // Already at the top
+        swapIndex = currentIndex - 1;
+      } else {
+        if (currentIndex === featuredProjects.length - 1) return; // Already at the bottom
+        swapIndex = currentIndex + 1;
+      }
+      
+      const currentProject = featuredProjects[currentIndex];
+      const swapProject = featuredProjects[swapIndex];
+      
+      // Swap the order
+      const { error: error1 } = await supabase
+        .from('projects')
+        .update({ featured_order: swapProject.featured_order })
+        .eq('id', currentProject.id);
+      
+      if (error1) throw error1;
+      
+      const { error: error2 } = await supabase
+        .from('projects')
+        .update({ featured_order: currentProject.featured_order })
+        .eq('id', swapProject.id);
+      
+      if (error2) throw error2;
+      
+      // Refresh the projects list
+      await fetchProjects();
+      setResult(`Project moved ${direction} successfully`);
+    } catch (err: any) {
+      console.error('Error reordering projects:', err);
+      setError(err.message || 'Failed to reorder projects');
+    }
+  };
+
+  return (
+    <div className="bg-gray-900 p-6 rounded-lg mb-8">
+      <h2 className="text-2xl font-normal mb-4">Featured Projects Management</h2>
+      <p className="text-gray-300 mb-6">
+        Use this section to manage which projects are featured on the homepage and their display order.
+      </p>
+      
+      {loading ? (
+        <div className="text-gray-400">Loading projects...</div>
+      ) : (
+        <div className="space-y-4">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-700">
+              <thead>
+                <tr>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">Project</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-300">Category</th>
+                  <th className="px-4 py-2 text-center text-sm font-medium text-gray-300">Featured</th>
+                  <th className="px-4 py-2 text-center text-sm font-medium text-gray-300">Order</th>
+                  <th className="px-4 py-2 text-center text-sm font-medium text-gray-300">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-800">
+                {projects.map((project) => (
+                  <tr key={project.id} className={project.featured ? "bg-gray-800/30" : ""}>
+                    <td className="px-4 py-3 text-sm text-white">{project.title}</td>
+                    <td className="px-4 py-3 text-sm text-gray-300">{project.category}</td>
+                    <td className="px-4 py-3 text-center">
+                      <button
+                        onClick={() => toggleFeatured(project.id, !project.featured)}
+                        className={`px-3 py-1 rounded text-xs ${
+                          project.featured
+                            ? "bg-green-900/50 text-green-400 hover:bg-green-900/70"
+                            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                        }`}
+                      >
+                        {project.featured ? "Featured" : "Not Featured"}
+                      </button>
+                    </td>
+                    <td className="px-4 py-3 text-center text-sm text-gray-300">
+                      {project.featured_order !== null ? project.featured_order : '-'}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      {project.featured && (
+                        <div className="flex justify-center space-x-2">
+                          <button
+                            onClick={() => moveProject(project.id, 'up')}
+                            className="p-1 rounded hover:bg-gray-700"
+                            title="Move Up"
+                          >
+                            ↑
+                          </button>
+                          <button
+                            onClick={() => moveProject(project.id, 'down')}
+                            className="p-1 rounded hover:bg-gray-700"
+                            title="Move Down"
+                          >
+                            ↓
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          {result && (
+            <div className="mt-4 p-3 bg-green-900 bg-opacity-30 border border-green-800 rounded-md text-green-400">
+              {result}
+            </div>
+          )}
+          
+          {error && (
+            <div className="mt-4 p-3 bg-red-900 bg-opacity-30 border border-red-800 rounded-md text-red-400">
+              {error}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

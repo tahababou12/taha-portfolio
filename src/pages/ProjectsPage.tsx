@@ -2,6 +2,23 @@ import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { Project } from '../types/project'
+import { getProjectSlug } from '../utils/slug'
+
+interface Technology {
+  technology: string;
+}
+
+interface Feature {
+  feature: string;
+}
+
+interface TeamMember {
+  member_name: string;
+}
+
+interface GalleryImage {
+  image_url: string;
+}
 
 const ProjectsPage: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<string>('all');
@@ -10,21 +27,20 @@ const ProjectsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [hoveredProjectId, setHoveredProjectId] = useState<string | null>(null);
   
-  // Handle card click for mobile devices
-  const handleCardClick = (e: React.MouseEvent, projectId: string) => {
-    // If this card is already hovered, let the click proceed to the link
-    if (hoveredProjectId === projectId) {
-      return;
-    }
-    
-    // Otherwise, prevent navigation and set this card as hovered
-    e.preventDefault();
+  // Handle card hover for desktop
+  const handleCardHover = (projectId: string | null) => {
     setHoveredProjectId(projectId);
   };
 
-  // Reset hovered state when user clicks elsewhere
+  // Reset hovered state when clicking outside
   useEffect(() => {
-    const handleOutsideClick = () => setHoveredProjectId(null);
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.project-card')) {
+        setHoveredProjectId(null);
+      }
+    };
+    
     document.addEventListener('click', handleOutsideClick);
     
     return () => {
@@ -47,7 +63,7 @@ const ProjectsPage: React.FC = () => {
         
         // For each project, fetch related data
         const projectsWithRelations = await Promise.all(
-          projectsData.map(async (project: any) => {
+          projectsData.map(async (project: Project) => {
             // Fetch technologies
             const { data: technologiesData } = await supabase
               .from('project_technologies')
@@ -75,10 +91,10 @@ const ProjectsPage: React.FC = () => {
             
             return {
               ...project,
-              technologies: technologiesData?.map((t: any) => t.technology) || [],
-              features: featuresData?.map((f: any) => f.feature) || [],
-              team: teamData?.map((t: any) => t.member_name) || [],
-              gallery: galleryData?.map((g: any) => g.image_url) || [],
+              technologies: technologiesData?.map((t: Technology) => t.technology) || [],
+              features: featuresData?.map((f: Feature) => f.feature) || [],
+              team: teamData?.map((m: TeamMember) => m.member_name) || [],
+              gallery: galleryData?.map((g: GalleryImage) => g.image_url) || [],
             };
           })
         );
@@ -122,9 +138,10 @@ const ProjectsPage: React.FC = () => {
   const renderProjectCard = (project: Project) => (
     <Link 
       key={project.id} 
-      to={`/project/${project.id}`}
-      className="aspect-square overflow-hidden relative group block cursor-pointer"
-      onClick={(e) => handleCardClick(e, project.id)}
+      to={`/project/${getProjectSlug(project.title)}`}
+      className="project-card aspect-square overflow-hidden relative group block cursor-pointer"
+      onMouseEnter={() => handleCardHover(project.id)}
+      onMouseLeave={() => handleCardHover(null)}
     >
       <img 
         src={project.gallery && project.gallery.length > 0 ? project.gallery[0] : project.image} 
@@ -153,7 +170,7 @@ const ProjectsPage: React.FC = () => {
               {project.category}
             </span>
             <span className="text-white text-sm underline">
-              {hoveredProjectId === project.id ? 'Tap to View' : 'View Details'}
+              View Details
             </span>
           </div>
         </div>

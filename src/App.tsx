@@ -6,6 +6,7 @@ import InfoPage from './pages/InfoPage'
 import ProjectsPage from './pages/ProjectsPage'
 import ProjectDetailPage from './pages/ProjectDetailPage'
 import AdminPage from './pages/AdminPage'
+import AwardsPage from './pages/AwardsPage'
 import Footer from './components/Footer'
 
 function ScrollToTop() {
@@ -61,7 +62,8 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/info" element={<InfoPage />} />
             <Route path="/projects" element={<ProjectsPage />} />
-            <Route path="/project/:id" element={<ProjectDetailPage />} />
+            <Route path="/project/:slug" element={<ProjectDetailPage />} />
+            <Route path="/awards" element={<AwardsPage />} />
             <Route path="/admin" element={<AdminPage />} />
           </Routes>
           <Footer />

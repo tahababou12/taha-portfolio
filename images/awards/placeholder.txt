@@ -1,0 +1,21 @@
+This directory is for award images that will be uploaded to Supabase storage.
+
+For each award, you need to provide:
+1. A main image (e.g., award-name-main.jpg)
+2. One or more gallery images (e.g., award-name-gallery1.jpg, award-name-gallery2.jpg)
+
+Naming convention for award images:
+- Main images: [award-id]-main.jpg
+- Gallery images: [award-id]-gallery-1.jpg, [award-id]-gallery-2.jpg, etc.
+
+Example for "Best Game Award":
+- hackprinceton-main.jpg
+- hackprinceton-gallery-1.jpg
+- hackprinceton-gallery-2.jpg
+
+All images should have a 16:9 aspect ratio for consistency.
+Recommended resolution: 1200x675 pixels.
+
+After adding images to this directory, use the following command to create the awards in Supabase:
+npm run db:migrate:awards
+npm run db:seed:awards

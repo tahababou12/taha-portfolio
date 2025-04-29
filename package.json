@@ -17,7 +17,14 @@
     "db:export": "node db/scripts/export-from-supabase.cjs",
     "db:import": "node db/scripts/import-to-local.cjs",
     "db:export-local": "node db/scripts/export-from-local.cjs",
-    "db:apply-rls": "node db/scripts/apply-rls-policies.cjs"
+    "db:apply-rls": "node db/scripts/apply-rls-policies.cjs",
+    "db:migrate:featured": "node db/scripts/add-featured-columns.cjs",
+    "db:migrate:awards": "npx supabase migration up -f db/migrations/20240508_create_awards_table.sql",
+    "db:seed:awards": "node db/scripts/seed-awards.cjs",
+    "db:setup:awards-schema": "node db/scripts/setup-awards-schema.cjs",
+    "populate-awards": "node scripts/populate-awards.cjs",
+    "create-award-dirs": "node scripts/create-award-image-dirs.cjs",
+    "upload-award-image": "node scripts/upload-award-images.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.7",

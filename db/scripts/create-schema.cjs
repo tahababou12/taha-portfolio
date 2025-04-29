@@ -76,6 +76,29 @@ CREATE TABLE IF NOT EXISTS project_sections (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 );
+
+-- Awards table
+CREATE TABLE IF NOT EXISTS awards (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  organization TEXT NOT NULL,
+  description TEXT NOT NULL,
+  image TEXT,
+  year TEXT,
+  full_description TEXT,
+  link TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Award gallery table
+CREATE TABLE IF NOT EXISTS award_gallery (
+  id TEXT PRIMARY KEY,
+  award_id TEXT NOT NULL,
+  image_url TEXT NOT NULL,
+  display_order INTEGER NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (award_id) REFERENCES awards(id) ON DELETE CASCADE
+);
 `);
 
 console.log('Schema created successfully!');

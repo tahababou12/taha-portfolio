@@ -3,96 +3,127 @@ import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft, ExternalLink } from 'lucide-react'
 import { Github } from 'lucide-react'
 import { supabase } from '../lib/supabase'
-import { Project } from '../types/project'
+import { Project, ProjectSection } from '../types/project'
+import { getProjectSlug } from '../utils/slug'
+
+interface Technology {
+  technology: string;
+}
+
+interface Feature {
+  feature: string;
+}
+
+interface TeamMember {
+  member_name: string;
+}
+
+interface GalleryImage {
+  image_url: string;
+}
 
 const ProjectDetailPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>()
+  const { slug } = useParams<{ slug: string }>()
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [prevProjectId, setPrevProjectId] = useState<string | null>(null)
-  const [nextProjectId, setNextProjectId] = useState<string | null>(null)
+  const [prevProject, setPrevProject] = useState<{id: string, title: string} | null>(null)
+  const [nextProject, setNextProject] = useState<{id: string, title: string} | null>(null)
 
   useEffect(() => {
     const fetchProject = async () => {
-      if (!id) return;
+      if (!slug) return;
       
       try {
         setLoading(true);
         
-        // Fetch the project
-        const { data: projectData, error: projectError } = await supabase
+        // Fetch all projects to find by slug
+        const { data: projectsData, error: projectsError } = await supabase
           .from('projects')
-          .select('*')
-          .eq('id', id)
-          .single();
+          .select('*');
         
-        if (projectError) throw projectError;
-        if (!projectData) throw new Error('Project not found');
+        if (projectsError) throw projectsError;
+        
+        // Find the project with matching slug
+        const matchingProject = projectsData.find(
+          (p: Project) => getProjectSlug(p.title) === slug
+        );
+        
+        if (!matchingProject) throw new Error('Project not found');
+        
+        const projectId = matchingProject.id;
         
         // Fetch technologies
         const { data: technologiesData } = await supabase
           .from('project_technologies')
           .select('technology')
-          .eq('project_id', id);
+          .eq('project_id', projectId);
         
         // Fetch features
         const { data: featuresData } = await supabase
           .from('project_features')
           .select('feature')
-          .eq('project_id', id);
+          .eq('project_id', projectId);
         
         // Fetch team members
         const { data: teamData } = await supabase
           .from('project_team_members')
           .select('member_name')
-          .eq('project_id', id);
+          .eq('project_id', projectId);
         
         // Fetch gallery images
         const { data: galleryData } = await supabase
           .from('project_gallery')
           .select('image_url')
-          .eq('project_id', id)
+          .eq('project_id', projectId)
           .order('display_order', { ascending: true });
         
         // Fetch project sections
         const { data: sectionsData } = await supabase
           .from('project_sections')
           .select('*')
-          .eq('project_id', id)
+          .eq('project_id', projectId)
           .order('display_order', { ascending: true });
         
         // Combine all data
         const fullProject = {
-          ...projectData,
-          technologies: technologiesData?.map(t => t.technology) || [],
-          features: featuresData?.map(f => f.feature) || [],
-          team: teamData?.map(t => t.member_name) || [],
-          gallery: galleryData?.map(g => g.image_url) || [],
+          ...matchingProject,
+          technologies: technologiesData?.map((t: Technology) => t.technology) || [],
+          features: featuresData?.map((f: Feature) => f.feature) || [],
+          team: teamData?.map((m: TeamMember) => m.member_name) || [],
+          gallery: galleryData?.map((g: GalleryImage) => g.image_url) || [],
           sections: sectionsData || [],
         };
         
         setProject(fullProject);
         
-        // Fetch previous and next project IDs for navigation
-        const { data: allProjects } = await supabase
-          .from('projects')
-          .select('id')
-          .order('created_at', { ascending: true });
-        
-        if (allProjects && allProjects.length > 0) {
-          const currentIndex = allProjects.findIndex(p => p.id === id);
+        // Find previous and next projects for navigation
+        if (projectsData && projectsData.length > 0) {
+          // Sort projects by created_at
+          const sortedProjects = [...projectsData].sort((a: Project, b: Project) => 
+            new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime()
+          );
+          
+          const currentIndex = sortedProjects.findIndex((p: Project) => p.id === projectId);
           
           if (currentIndex > 0) {
-            setPrevProjectId(allProjects[currentIndex - 1].id);
+            const prev = sortedProjects[currentIndex - 1];
+            setPrevProject({
+              id: prev.id,
+              title: prev.title
+            });
           } else {
-            setPrevProjectId(null);
+            setPrevProject(null);
           }
           
-          if (currentIndex < allProjects.length - 1) {
-            setNextProjectId(allProjects[currentIndex + 1].id);
+          if (currentIndex < sortedProjects.length - 1) {
+            const next = sortedProjects[currentIndex + 1];
+            setNextProject({
+              id: next.id,
+              title: next.title
+            });
           } else {
-            setNextProjectId(null);
+            setNextProject(null);
           }
         }
         
@@ -106,7 +137,7 @@ const ProjectDetailPage: React.FC = () => {
     };
     
     fetchProject();
-  }, [id]);
+  }, [slug]);
 
   if (loading) {
     return (
@@ -264,7 +295,7 @@ const ProjectDetailPage: React.FC = () => {
       {/* Project gallery - showing additional images (skipping the first one which is used as hero) */}
       {project.gallery && project.gallery.length > 1 && (
         <div className="mb-12">
-          <h2 className="text-2xl font-normal mb-6 border-b border-gray-800 pb-2">Gallery</h2>
+          <h2 className="text-2xl font-normal mb-6 border-b border-gray-800 pb-2"><span className="font-bold">{project.title}</span> Project Gallery</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {project.gallery.slice(1).map((image, index) => (
               <div key={index} className="rounded-lg overflow-hidden">
@@ -281,9 +312,9 @@ const ProjectDetailPage: React.FC = () => {
 
       {/* Next/Previous project navigation */}
       <div className="flex justify-between items-center border-t border-gray-800 pt-8 mt-12">
-        {prevProjectId ? (
+        {prevProject ? (
           <Link 
-            to={`/project/${prevProjectId}`} 
+            to={`/project/${getProjectSlug(prevProject.title)}`} 
             className="inline-flex items-center text-gray-400 hover:text-white transition-colors"
           >
             <ArrowLeft size={20} className="mr-2" />
@@ -296,9 +327,9 @@ const ProjectDetailPage: React.FC = () => {
           </span>
         )}
         
-        {nextProjectId ? (
+        {nextProject ? (
           <Link 
-            to={`/project/${nextProjectId}`} 
+            to={`/project/${getProjectSlug(nextProject.title)}`} 
             className="inline-flex items-center text-gray-400 hover:text-white transition-colors"
           >
             Next Project

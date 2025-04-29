@@ -25,7 +25,7 @@ const Navbar: React.FC = () => {
         {/* Desktop navigation */}
         <div className="hidden md:flex md:space-x-8">
           <Link to="/" className="text-white hover:text-gray-300 transition-colors">Work</Link>
-          <a href="#" className="text-white hover:text-gray-300 transition-colors">Awards</a>
+          <Link to="/awards" className="text-white hover:text-gray-300 transition-colors">Awards</Link>
           <Link to="/info" className="text-white hover:text-gray-300 transition-colors">Info</Link>
           <a href="#" className="text-white hover:text-gray-300 transition-colors">Resume</a>
         </div>
@@ -35,7 +35,7 @@ const Navbar: React.FC = () => {
       {isMenuOpen && (
         <div className="md:hidden mt-4 flex flex-col space-y-4 py-4">
           <Link to="/" className="text-white hover:text-gray-300 transition-colors">Work</Link>
-          <a href="#" className="text-white hover:text-gray-300 transition-colors">Fun</a>
+          <Link to="/awards" className="text-white hover:text-gray-300 transition-colors">Awards</Link>
           <Link to="/info" className="text-white hover:text-gray-300 transition-colors">Info</Link>
           <a href="#" className="text-white hover:text-gray-300 transition-colors">Resume</a>
         </div>
