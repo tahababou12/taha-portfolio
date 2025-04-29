@@ -27,7 +27,7 @@ const Navbar: React.FC = () => {
           <Link to="/" className="text-white hover:text-gray-300 transition-colors">Work</Link>
           <Link to="/awards" className="text-white hover:text-gray-300 transition-colors">Awards</Link>
           <Link to="/info" className="text-white hover:text-gray-300 transition-colors">Info</Link>
-          <a href="#" className="text-white hover:text-gray-300 transition-colors">Resume</a>
+          <a href="https://drive.google.com/file/d/1d0_nLHEYijiMREiB56gRUehfX021xLVm/view" target="_blank" rel="noopener noreferrer" className="text-white hover:text-gray-300 transition-colors">Resume</a>
         </div>
       </div>
       
@@ -37,7 +37,7 @@ const Navbar: React.FC = () => {
           <Link to="/" className="text-white hover:text-gray-300 transition-colors">Work</Link>
           <Link to="/awards" className="text-white hover:text-gray-300 transition-colors">Awards</Link>
           <Link to="/info" className="text-white hover:text-gray-300 transition-colors">Info</Link>
-          <a href="#" className="text-white hover:text-gray-300 transition-colors">Resume</a>
+          <a href="https://drive.google.com/file/d/1d0_nLHEYijiMREiB56gRUehfX021xLVm/view" target="_blank" rel="noopener noreferrer" className="text-white hover:text-gray-300 transition-colors">Resume</a>
         </div>
       )}
     </nav>
