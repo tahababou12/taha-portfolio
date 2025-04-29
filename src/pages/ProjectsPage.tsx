@@ -8,7 +8,30 @@ const ProjectsPage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hoveredProjectId, setHoveredProjectId] = useState<string | null>(null);
   
+  // Handle card click for mobile devices
+  const handleCardClick = (e: React.MouseEvent, projectId: string) => {
+    // If this card is already hovered, let the click proceed to the link
+    if (hoveredProjectId === projectId) {
+      return;
+    }
+    
+    // Otherwise, prevent navigation and set this card as hovered
+    e.preventDefault();
+    setHoveredProjectId(projectId);
+  };
+
+  // Reset hovered state when user clicks elsewhere
+  useEffect(() => {
+    const handleOutsideClick = () => setHoveredProjectId(null);
+    document.addEventListener('click', handleOutsideClick);
+    
+    return () => {
+      document.removeEventListener('click', handleOutsideClick);
+    };
+  }, []);
+
   // Fetch projects and related data from Supabase
   useEffect(() => {
     const fetchProjects = async () => {
@@ -101,6 +124,7 @@ const ProjectsPage: React.FC = () => {
       key={project.id} 
       to={`/project/${project.id}`}
       className="aspect-square overflow-hidden relative group block cursor-pointer"
+      onClick={(e) => handleCardClick(e, project.id)}
     >
       <img 
         src={project.gallery && project.gallery.length > 0 ? project.gallery[0] : project.image} 
@@ -108,8 +132,10 @@ const ProjectsPage: React.FC = () => {
         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
       />
       
-      {/* Overlay that appears only on hover */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-6">
+      {/* Overlay that appears on hover or when tapped on mobile */}
+      <div className={`absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 transition-opacity duration-300 flex flex-col justify-between p-6 ${
+        hoveredProjectId === project.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+      }`}>
         {/* Top section with title */}
         <div>
           <h3 className="text-white text-2xl sm:text-3xl font-medium drop-shadow-md">
@@ -127,7 +153,7 @@ const ProjectsPage: React.FC = () => {
               {project.category}
             </span>
             <span className="text-white text-sm underline">
-              View Details
+              {hoveredProjectId === project.id ? 'Tap to View' : 'View Details'}
             </span>
           </div>
         </div>
