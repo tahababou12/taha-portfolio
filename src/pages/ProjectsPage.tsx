@@ -112,26 +112,44 @@ const ProjectsPage: React.FC = () => {
     fetchProjects();
   }, []);
 
-  // Group projects by category
+  // Extract all unique categories, including those that are comma-separated
+  const getAllCategories = () => {
+    const categorySet = new Set<string>();
+    
+    projects.forEach(project => {
+      if (project.category) {
+        const categories = project.category.split(',');
+        categories.forEach(category => {
+          categorySet.add(category.trim());
+        });
+      }
+    });
+    
+    return Array.from(categorySet);
+  };
+  
+  // Get unique categories to populate filter buttons
+  const uniqueCategories = getAllCategories();
+  
+  // Group projects by category, handling comma-separated categories
   const projectsByCategory: Record<string, Project[]> = {};
   
-  // Get unique categories to populate both the filter buttons and the projectsByCategory object
-  const uniqueCategories = [...new Set(projects.map(project => project.category))];
-  
-  // Populate projectsByCategory with all projects grouped by their category
   uniqueCategories.forEach(category => {
-    if (category) {
-      projectsByCategory[category.toLowerCase()] = projects.filter(p => p.category === category);
-    }
+    projectsByCategory[category.toLowerCase()] = projects.filter(p => 
+      p.category && p.category.split(',').map(c => c.trim().toLowerCase()).includes(category.toLowerCase())
+    );
   });
   
   // Get categories for filter buttons, ensuring 'all' is first
   const categories = ['all', ...uniqueCategories];
 
-  // Filter projects based on active filter
+  // Filter projects based on active filter, accounting for comma-separated categories
   const filteredProjects = activeFilter === 'all' 
     ? projects 
-    : projects.filter(project => project.category && project.category.toLowerCase() === activeFilter.toLowerCase());
+    : projects.filter(project => 
+        project.category && 
+        project.category.split(',').map(c => c.trim().toLowerCase()).includes(activeFilter.toLowerCase())
+      );
 
   // Get page title based on active filter
   const getPageTitle = () => {
@@ -171,9 +189,13 @@ const ProjectsPage: React.FC = () => {
             {project.description}
           </p>
           <div className="flex items-center justify-between">
-            <span className="text-sm bg-gray-800/80 text-gray-200 px-2 py-1 rounded">
-              {project.category}
-            </span>
+            <div className="flex flex-wrap gap-1">
+              {project.category?.split(',').map((cat, i) => (
+                <span key={i} className="text-xs bg-gray-800 text-gray-200 px-2 py-1 rounded-md">
+                  {cat.trim()}
+                </span>
+              ))}
+            </div>
             <span className="text-white text-sm underline">
               View Details
             </span>
@@ -240,7 +262,7 @@ const ProjectsPage: React.FC = () => {
             categoryProjects.length > 0 && (
               <section key={category} className="mb-16">
                 <h2 className="text-2xl font-normal mb-6 border-b border-gray-800 pb-2">
-                  {categoryProjects[0]?.category || category} Projects
+                  {category.charAt(0).toUpperCase() + category.slice(1)} Projects
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                   {categoryProjects.map(renderProjectCard)}

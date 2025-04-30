@@ -179,9 +179,13 @@ const HomePage: React.FC = () => {
                     {project.description}
                   </p>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm bg-gray-800/80 text-gray-200 px-2 py-1 rounded">
-                      {project.category}
-                    </span>
+                    <div className="flex flex-wrap gap-1">
+                      {project.category?.split(',').map((cat, i) => (
+                        <span key={i} className="text-xs bg-gray-800 text-gray-200 px-2 py-1 rounded-md">
+                          {cat.trim()}
+                        </span>
+                      ))}
+                    </div>
                     <span className="text-white text-sm underline">
                       View Details
                     </span>

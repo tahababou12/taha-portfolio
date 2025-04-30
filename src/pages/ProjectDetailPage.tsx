@@ -219,9 +219,13 @@ const ProjectDetailPage: React.FC = () => {
       <div className="mb-12">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
           <h1 className="text-3xl sm:text-4xl font-normal mb-2 md:mb-0">{project.title}</h1>
-          <span className="inline-block bg-gray-800 text-gray-200 px-3 py-1 rounded-md text-sm">
-            {project.category}
-          </span>
+          <div className="flex flex-wrap gap-1">
+            {project.category?.split(',').map((cat, i) => (
+              <span key={i} className="text-sm bg-gray-800 text-gray-200 px-3 py-1 rounded-md">
+                {cat.trim()}
+              </span>
+            ))}
+          </div>
         </div>
         <p className="text-xl text-gray-300">{project.description}</p>
       </div>
