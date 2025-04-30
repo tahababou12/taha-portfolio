@@ -102,7 +102,7 @@ const HomePage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-8 sm:mb-16">
         <div className="md:w-1/2 mb-8 md:mb-0">
           <h1 className="text-2xl sm:text-3xl font-normal">
-            Taha Ababou <span className="text-gray-500">is a Full Stack Software & Machine Learning Engineer with</span> <span className="text-white cursor-pointer">4 YoE</span>.
+            Taha Ababou <span className="text-gray-500">is a Full-Stack Software & Machine Learning Engineer building</span> <span className="text-white cursor-pointer">AI-driven applications</span>.
           </h1>
           
           <div className="mt-8 max-w-2xl">
@@ -116,7 +116,8 @@ const HomePage: React.FC = () => {
               See his <a href="https://github.com/tahababou12" target="_blank" rel="noopener noreferrer" className="text-white underline">GitHub</a>
             </p>
             <p className="text-lg sm:text-xl">
-              <a href="https://bragai.dev" target="_blank" rel="noopener noreferrer" className="text-white underline">BragAI</a> Project
+              <a href="https://bragai.dev" target="_blank" rel="noopener noreferrer" className="text-white underline">BragAI</a>
+              <span className="text-gray-500"> - Launching soon!</span>
             </p>
             <p className="text-lg sm:text-xl">
               <a href="https://github.com/bRAGAI/bRAG-langchain" target="_blank" rel="noopener noreferrer" className="text-white underline">Open-Source</a> Contributions
