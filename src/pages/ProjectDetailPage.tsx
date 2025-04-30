@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, ExternalLink } from 'lucide-react'
+import { ArrowLeft, ExternalLink, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Github } from 'lucide-react'
 import { supabase } from '../lib/supabase'
-import { Project, ProjectSection } from '../types/project'
+import { Project } from '../types/project'
 import { getProjectSlug } from '../utils/slug'
 
 interface Technology {
@@ -29,6 +29,52 @@ const ProjectDetailPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [prevProject, setPrevProject] = useState<{id: string, title: string} | null>(null)
   const [nextProject, setNextProject] = useState<{id: string, title: string} | null>(null)
+  const [galleryOpen, setGalleryOpen] = useState(false)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+
+  // Gallery navigation functions
+  const openGallery = (index: number) => {
+    setCurrentImageIndex(index);
+    setGalleryOpen(true);
+    // Prevent scrolling when gallery is open
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeGallery = () => {
+    setGalleryOpen(false);
+    // Restore scrolling
+    document.body.style.overflow = 'auto';
+  };
+
+  const nextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!project?.gallery) return;
+    setCurrentImageIndex((prev) => (prev + 1) % project.gallery!.length);
+  };
+
+  const prevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!project?.gallery) return;
+    setCurrentImageIndex((prev) => (prev - 1 + project.gallery!.length) % project.gallery!.length);
+  };
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!galleryOpen || !project?.gallery) return;
+      
+      if (e.key === 'Escape') {
+        closeGallery();
+      } else if (e.key === 'ArrowRight') {
+        setCurrentImageIndex((prev) => (prev + 1) % project.gallery!.length);
+      } else if (e.key === 'ArrowLeft') {
+        setCurrentImageIndex((prev) => (prev - 1 + project.gallery!.length) % project.gallery!.length);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [galleryOpen, project]);
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -181,7 +227,7 @@ const ProjectDetailPage: React.FC = () => {
       </div>
 
       {/* Hero image - using the first gallery image */}
-      <div className="mb-12 rounded-lg overflow-hidden">
+      <div className="mb-12 rounded-lg overflow-hidden cursor-pointer" onClick={() => project.gallery && project.gallery.length > 0 && openGallery(0)}>
         <img 
           src={project.gallery && project.gallery.length > 0 ? project.gallery[0] : project.image} 
           alt={project.title} 
@@ -298,7 +344,11 @@ const ProjectDetailPage: React.FC = () => {
           <h2 className="text-2xl font-normal mb-6 border-b border-gray-800 pb-2"><span className="font-bold">{project.title}</span> Project Gallery</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {project.gallery.slice(1).map((image, index) => (
-              <div key={index} className="rounded-lg overflow-hidden">
+              <div 
+                key={index} 
+                className="rounded-lg overflow-hidden cursor-pointer" 
+                onClick={() => openGallery(index + 1)}
+              >
                 <img 
                   src={image} 
                   alt={`${project.title} gallery ${index + 1}`} 
@@ -342,6 +392,53 @@ const ProjectDetailPage: React.FC = () => {
           </span>
         )}
       </div>
+
+      {/* Gallery Modal */}
+      {galleryOpen && project.gallery && (
+        <div 
+          className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center p-4"
+          onClick={closeGallery}
+        >
+          <div className="absolute top-4 right-4 z-10">
+            <button 
+              className="text-white bg-gray-800 rounded-full p-2 hover:bg-gray-700 transition-colors"
+              onClick={closeGallery}
+            >
+              <X size={24} />
+            </button>
+          </div>
+          
+          <div className="absolute left-4 z-10">
+            <button 
+              className="text-white bg-gray-800 rounded-full p-2 hover:bg-gray-700 transition-colors"
+              onClick={prevImage}
+            >
+              <ChevronLeft size={24} />
+            </button>
+          </div>
+          
+          <div className="absolute right-4 z-10">
+            <button 
+              className="text-white bg-gray-800 rounded-full p-2 hover:bg-gray-700 transition-colors"
+              onClick={nextImage}
+            >
+              <ChevronRight size={24} />
+            </button>
+          </div>
+          
+          <div className="w-full max-w-4xl max-h-[80vh] flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+            <img 
+              src={project.gallery[currentImageIndex]} 
+              alt={`${project.title} gallery ${currentImageIndex + 1}`}
+              className="max-w-full max-h-[80vh] object-contain"
+            />
+          </div>
+          
+          <div className="absolute bottom-4 text-center text-white">
+            {currentImageIndex + 1} / {project.gallery.length}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
